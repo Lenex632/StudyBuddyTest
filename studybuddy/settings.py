@@ -14,7 +14,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-CSRF_TRUSTED_ORIGINS = ['https://tranquil-ocean-84501.herokuapp.com/']
+CSRF_TRUSTED_ORIGINS = ['tranquil-ocean-84501.herokuapp.com']
 
 # Application definition
 
