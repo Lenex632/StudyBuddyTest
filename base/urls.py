@@ -11,7 +11,7 @@ urlpatterns = [
 
     path('', views.home, name='home'),
 
-    path('profile/<str:pk>/', views.user_profile, name='user-profile'),
+    path('profile/<str:pk>/', views.UserProfile.as_view(), name='user-profile'),
 
     path('room/<str:pk>/', views.room_page, name='room'),
     path('create-room/', views.create_room, name='create-room'),
@@ -22,6 +22,6 @@ urlpatterns = [
 
     path('update-user/', views.update_user, name='update-user'),
 
-    path('topics/', views.topics_page, name='topics'),
-    path('activity/', views.activiti_page, name='activity'),
+    path('topics/', views.TopicPage.as_view(), name='topics'),
+    path('activity/', views.ActivityPage.as_view(), name='activity'),
 ]

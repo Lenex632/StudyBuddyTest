@@ -1,5 +1,15 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+
+
+class User(AbstractUser):
+    def user_avatar_path(instance, fileneme):
+        return f'user_{instance.id}/{fileneme}'
+
+    name = models.CharField(max_length=200, null=True)
+    email = models.EmailField(null=True, unique=True)
+    bio = models.TextField(null=True)
+    avatar = models.ImageField(null=True, default='avatar.svg', upload_to=user_avatar_path)
 
 
 class Topic(models.Model):

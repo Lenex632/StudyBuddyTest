@@ -4,11 +4,10 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
+from django.views.generic import DetailView, ListView
 
-from .forms import RoomForm, UserForm
-from .models import Room, Topic, Message
+from .forms import RoomForm, UserForm, MyUserCreationForm
+from .models import Room, Topic, Message, User
 
 
 def login_page(request):
@@ -44,10 +43,10 @@ def logout_page(request):
 
 
 def registrate_page(request):
-    form = UserCreationForm()
+    form = MyUserCreationForm()
 
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = MyUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.username = user.username.lower()
@@ -68,6 +67,7 @@ def home(request):
         Q(name__icontains=q) |
         Q(description__icontains=q)
     )
+    all_topics = Topic.objects.all()
     topics = Topic.objects.all()[:5]
     room_count = rooms.count()
     room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))[:5]
@@ -75,6 +75,7 @@ def home(request):
     context = {
         'rooms': rooms,
         'topics': topics,
+        'all_topics': all_topics,
         'room_count': room_count,
         'room_messages': room_messages,
     }
@@ -99,19 +100,17 @@ def room_page(request, pk):
     return render(request, 'base/room.html', context)
 
 
-def user_profile(request, pk):
-    user = User.objects.get(id=pk)
-    rooms = user.room_set.all()
-    room_messages = user.message_set.all()[:5]
-    topics = Topic.objects.all()
+class UserProfile(DetailView):
+    template_name = 'base/profile.html'
+    model = User
 
-    context = {
-        'user': user,
-        'rooms': rooms,
-        'room_messages': room_messages,
-        'topics': topics
-    }
-    return render(request, 'base/profile.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.object
+        context['rooms'] = self.object.room_set.all()
+        context['room_messages'] = self.object.message_set.all()[:5]
+        context['topics'] = Topic.objects.all()
+        return context
 
 
 @login_required(login_url='base:login')
@@ -186,13 +185,13 @@ def delete_message(request, pk):
     return render(request, 'base/delete.html', {'obj': message})
 
 
-@login_required(login_url='login')
+@login_required(login_url='base:login')
 def update_user(request):
     user = request.user
     form = UserForm(instance=user)
 
     if request.method == 'POST':
-        form = UserForm(request.POST, instance=user)
+        form = UserForm(request.POST, request.FILES, instance=user)
         if form.is_valid():
             form.save()
             return redirect('base:user-profile', pk=user.id)
@@ -201,15 +200,22 @@ def update_user(request):
     return render(request, 'base/update_user.html', context)
 
 
-def topics_page(request):
-    q = request.GET.get('q') if request.GET.get('q') != None else ''
-    topics = Topic.objects.filter(name__icontains=q)
+class TopicPage(ListView):
+    model = Topic
+    template_name = 'base/topics.html'
 
-    context = {'topics': topics}
-    return render(request, 'base/topics.html', context)
+    def get_context_data(self, *, object_list=None, **kwargs):
+        q = self.request.GET.get('q') if self.request.GET.get('q') != None else ''
+        topics = self.model.objects.filter(name__icontains=q)
+        context = {'topics': topics}
+        return context
 
 
-def activiti_page(request):
-    room_messages = Message.objects.all()
-    context = {'room_messages': room_messages}
-    return render(request, 'base/activity.html', context)
+class ActivityPage(ListView):
+    model = Message
+    template_name = 'base/activity.html'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        room_messages = self.model.objects.all()
+        context = {'room_messages': room_messages}
+        return context
