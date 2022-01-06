@@ -14,7 +14,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOW_CREDENTIALS = True
+
 CSRF_TRUSTED_ORIGINS = ['tranquil-ocean-84501.herokuapp.com']
+
+CORS_REPLACE_HTTPS_REFERER = True
+
 
 # Application definition
 
