@@ -24,7 +24,6 @@ CSRF_TRUSTED_ORIGINS = ['tranquil-ocean-84501.herokuapp.com']
 
 CORS_REPLACE_HTTPS_REFERER = True
 
-
 # Application definition
 
 INSTALLED_APPS = [
